@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)http://www.mathisgood.net84.net/clc.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+		<title>01:03:37</title>
+		<script>
+var psx = 95, psy = 95, msx, msy, vr = 3, gv = [], ge = [];
+function sel (s) {
+	return document.getElementById(s);
+}
+function dt () {
+	window.document.title = (clock.time.h<10? "0":"")+clock.time.h+":"+
+		(clock.time.m<10? "0":"")+clock.time.m+":"+
+		(clock.time.s<10? "0":"")+clock.time.s;
+}
+// <clock>
+var clock = {
+	time: {
+		h: undefined,
+		m: undefined,
+		s: undefined
+	},
+	size: {
+		vr: 0.02,
+		vsr: 0.02*0.2,
+		hr: 0.42,
+		mhr: 0.14,
+		mlr: 0.28,
+		shr: 0.14+0.02+4*0.02*0.2,
+		slr: 0.28+0.02+4*0.02*0.2
+	},
+	points: {
+		h: [],
+		mh: [],
+		ml: [],
+		sh: [],
+		sl: []
+	},
+	color: {
+		back: RGB(192, 192, 192),
+		empty: RGB(255, 255, 255),
+		yes: RGB(0, 0, 0),
+		no: RGB(255, 255, 255)
+	},
+	timeout: undefined, 
+	interval: undefined, 
+	tickTime: function () {
+		if(++this.time.s >= 60) {
+			this.time.s = 1;
+			if(++this.time.m >= 60) {
+				this.time.m = 1;
+				if(++this.time.h >= 24) {
+					this.time.h = 1;
+				}
+			}
+		}
+		this.updateColor(this.time.h, this.time.m, this.time.s);
+		this.repaint();
+												dt();
+	},
+	updateColor: function (h, m, s) {
+		var ml = m%10, mh = Math.floor(m/10), 
+			sl = s%10, sh = Math.floor(s/10), hf = (h >= 12), 
+			hc1 = (hf? this.color.no : this.color.yes),
+			hc2 = (!hf? this.color.no : this.color.yes);
+		for(var i = 0; i < h%12; i ++) {
+			this.points.h[i].c = hc1;
+		}
+		for(var i = h%12; i < 12; i ++) {
+			this.points.h[i].c = hc2;
+		}
+		if(ml == 0) mh --;
+		for(var i = 0; i < mh; i ++) {
+			this.points.mh[i].c = this.color.yes;
+		}
+		for(var i = mh; i < 6; i ++) {
+			this.points.mh[i].c = this.color.no;
+		}
+		if(ml == 0) ml = 10;
+		for(var i = 0; i < ml; i ++) {
+			this.points.ml[i].c = this.color.yes;
+		}
+		for(var i = ml; i < 10; i ++) {
+			this.points.ml[i].c = this.color.no;
+		}//
+		if(sl == 0) sh --;
+		for(var i = 0; i < sh; i ++) {
+			this.points.sh[i].c = this.color.yes;
+		}
+		for(var i = sh; i < 6; i ++) {
+			this.points.sh[i].c = this.color.no;
+		}
+		if(sl == 0) sl = 10;
+		for(var i = 0; i < sl; i ++) {
+			this.points.sl[i].c = this.color.yes;
+		}
+		for(var i = sl; i < 10; i ++) {
+			this.points.sl[i].c = this.color.no;
+		}
+	},
+	repaint: function () {
+		this.clear();
+		this.paint();
+	},
+	paint: function () {
+		var ctx = getCtx(), ofs = ctx.fillStyle, pts = [], vr = this.size.vr;
+		pts = pts.concat(this.points.h);
+		pts = pts.concat(this.points.mh);
+		pts = pts.concat(this.points.ml);
+		for(var i = 0; i < pts.length; i ++) {
+			ctx.fillStyle = pts[i].c;
+			ctx.beginPath();
+			ctx.arc(pts[i].x*msx, pts[i].y*msy, vr*msx, 0, 2*Math.PI, false);
+			ctx.fill();
+			//ctx.fillRect(pts[i].x*msx-vr, pts[i].y*msy-vr, 2*vr, 2*vr);
+		}
+		pts.splice(0, pts.length);
+		vr = this.size.vsr;
+		pts = pts.concat(this.points.sh);
+		pts = pts.concat(this.points.sl);
+		for(var i = 0; i < pts.length; i ++) {
+			ctx.fillStyle = pts[i].c;
+			ctx.beginPath();
+			ctx.arc(pts[i].x*msx, pts[i].y*msy, vr*msx, 0, 2*Math.PI, false);
+			ctx.fill();
+			//ctx.fillRect(pts[i].x*msx-vr, pts[i].y*msy-vr, 2*vr, 2*vr);
+		}
+		ctx.fillStyle = ofs;
+	},
+	clear: function () {
+		var	ctx = getCtx(),
+			ofs = ctx.fillStyle;
+		ctx.fillStyle = this.color.empty;
+		ctx.fillRect(0, 0, msx, msy);
+		ctx.beginPath();
+		ctx.fillStyle = this.color.back;
+		ctx.arc(0.5*msx, 0.5*msy, 0.5*msx, 0, 2*Math.PI, false);
+		ctx.fill();
+		ctx.fillStyle = ofs;
+
+	}, 
+	makePoints: function (x0, y0, r, f0, n, dc) {
+		var a = 2*Math.PI/n, v = [], f = f0, x, y;
+		for(var i = 0; i < n; i ++) {
+			x = x0 + r*Math.cos(f);
+			y = y0 + r*Math.sin(f);
+			v.push({x: x, y: y, c: dc});
+			f += a;
+		}
+		return v;
+	},
+	init: function () {
+		this.points.h = this.makePoints(0.5, 0.5, this.size.hr, -Math.PI/2, 12, this.color.no);
+		this.points.mh = this.makePoints(0.5, 0.5, this.size.mhr, -Math.PI/2, 6, this.color.no);
+		this.points.ml = this.makePoints(0.5, 0.5, this.size.mlr, -Math.PI/2, 10, this.color.no);
+		this.points.sh = this.makePoints(0.5, 0.5, this.size.shr, -Math.PI/2, 6, this.color.no);
+		this.points.sl = this.makePoints(0.5, 0.5, this.size.slr, -Math.PI/2, 10, this.color.no);
+		this.delay();
+	},
+	delay: function () {
+		var d = new Date(), t = 1000/**60*/ - (d.getTime()%(1000/**60*/)), obj = this;
+		this.time.h = d.getHours();
+		this.time.m = d.getMinutes();
+		this.time.s = d.getSeconds();
+		this.updateColor(this.time.h, this.time.m, this.time.s);
+		this.repaint();
+												dt();
+		this.timeout = window.setTimeout(function(){obj.delayed()}, t);
+	},
+	delayed: function () {
+		var obj = this
+		this.timeout = undefined;
+		this.tickTime();
+		this.interval = window.setInterval(function(){obj.tickTime();}, 1000/**60*/);
+	},
+	uninit: function () {
+		if(this.timeout !== undefined) {
+			window.clearTimeout(this.timeout);
+			this.timeout = undefined;
+		}
+		if(this.interval !== undefined) {
+			window.clearTimeout(this.interval);
+			this.interval = undefined;
+		}
+		this.points.h.splice(0, this.points.h.length);
+		this.points.mh.ssplice(0, this.points.mh.length);
+		this.points.ml.splice(0, this.points.ml.length);
+		this.points.sh.splice(0, this.points.sh.length);
+		this.points.sl.splice(0, this.points.sl.length);
+	},
+};
+// </clock>
+function onload () {
+	updateOrientation();
+	clock.init();
+	window.addEventListener("orientationchange", updateOrientation);
+	window.addEventListener("resize", updateOrientation);
+}
+function updateOrientation () {
+	var canvas = sel("draw"), h = document.getElementsByTagName("html")[0], x = h.offsetWidth, y = h.offsetHeight;
+	canvas.width = canvas.height = 
+		msx = msy = 
+	//	Math.min(window.innerWidth*psx/100, window.innerHeight*psy/100);
+	//alert(Math.min(window.innerWidth, window.outerWidth)+"x"+Math.min(window.innerHeight, window.outerHeight));
+		Math.min(x, y)*psx/100;
+	canvas.style["margin-top"] = ((y/x)*(100-psx+100*(y>x?1-x/y:0))/2)+"%";
+}
+function onunload () {
+	clock.uninit();
+}
+function getCtx () {
+	return sel("draw").getContext("2d");
+}
+function clr () {
+	var	ctx = getCtx(),
+		ofs = ctx.fillStyle;
+	ctx.fillStyle = "#FFFFFF";
+	ctx.fillRect(0, 0, msx, msy);
+	ctx.fillStyle = ofs;
+}
+function RGB(R, G, B) {
+	var letters = '0123456789ABCDEF'.split('');
+	var color = '#';
+	color += letters[Math.floor(R/16)];
+	color += letters[R%16];
+	color += letters[Math.floor(G/16)];
+	color += letters[G%16];
+	color += letters[Math.floor(B/16)];
+	color += letters[B%16];
+	return color;
+}
+		</script>
+		<style>
+#draw, body, html {
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+	overflow: hidden;
+}
+body, html {
+	width: 100%;
+	height: 100%;
+}
+#draw {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+    border-radius: 100%;
+	/*outline: 3px solid black;*/
+}
+		</style>
+	</head>
+	<body id="body" onload="onload()" onunload="onunload()">
+		<canvas id="draw" width="0" height="0">Error</canvas>
+	
+</body></html>

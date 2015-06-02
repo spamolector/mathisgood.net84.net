@@ -1,0 +1,67 @@
+﻿<!doctype html>
+<html>
+	<head>
+		<title>@ant</title>
+		<meta charset='UTF-8'>
+		<style> 
+.psi {
+    -webkit-animation: mymove 4s infinite linear; /* Chrome, Safari, Opera */ 
+    animation: mymove 4s infinite linear;
+	color: #FFFFFF;
+}
+.example {
+	float: left;
+	border: 1px solid #808080;
+	width: 104px;
+}
+
+/* Chrome, Safari, Opera */ 
+@-webkit-keyframes mymove {
+    0%   {background: #FF0000;}
+    25%  {background: #00FF00;}
+    50%  {background: #0000FF;}
+    75%  {background: #00FF00;}
+    100% {background: #FF0000;}
+}
+
+/* Standard syntax */
+@keyframes mymove {
+    0%   {background: #FF0000;}
+    25%  {background: #00FF00;}
+    50%  {background: #0000FF;}
+    75%  {background: #00FF00;}
+    100% {background: #FF0000;}
+}
+		</style>
+	</head>
+	
+	<body>
+		<hr>
+		<a href='WebCamRecorder.zip'>WebCamRecorder</a><br>
+		<a href='WebCamRecorder_ctrl_ui.zip'>WebCamRecorder control UI</a><br>
+		<a href='encode.html' style='background: #FF8080;'>Encode</a><br>
+		<a href='CurPos.zip'>CurPos</a><br>
+		<a href='psi.html' class='psi'>Psi</a><br>
+		<a href='ps.html' style='background: #FFFF40;'>Graph 1</a><br>
+		<a href='psc.html' style='background: #FFFF40;'>Graph 1 (Click)</a><br>
+		<a href='clc.html' style='outline: dashed 1px #808080;'>Clock</a><br>
+		<a href='pick0.zip'>Enumerate selectively files on your Windows PC (old)</a><br>
+		<a href='pick.zip'>Enumerate <b>all</b> files on your Windows PC (new)</a><br>
+		<a href='clc2.html' style='outline: dashed 1px #808080;'>Minecraft clock</a><br>
+		<hr>
+		<div class='example'>
+			<iframe src='clc.html' width='100' height='100'></iframe><br>
+			<a width='100' href='clc.html' style='outline: dashed 1px #808080;'>Clock</a>
+		</div>
+		<div class='example'>
+			<iframe src='clc2.html' width='100' height='100'></iframe><br>
+			<a width='100' href='clc2.html' style='outline: dashed 1px #808080;'>Minecraft clock</a>
+		</div>
+		<div class='example' >
+			<iframe src='psi.html' width='100' height='100'></iframe><br>
+			<a width='100' href='psi.html' id='psi'>Psi</a>
+		</div>
+		<div style='clear:both;'></div>
+		<hr>
+	</body>
+</html>

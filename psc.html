@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+	<head>
+		<title>@</title>
+		<script>
+var psx = 98, psy = 98, msx, msy, vr = 1.5, 
+	gv = [], ge = [], gvc = [], gs;
+var gt_p, gt_m, gt_i, ot;
+function sel (s) {
+	return document.getElementById(s);
+}
+function onload () {
+	var canvas = sel("draw");
+	msx = canvas.width = window.innerWidth*psx/100;
+	msy = canvas.height = window.innerHeight*psy/100;
+	canvas.onclick = click;
+	gs = 0;
+	//gt__();
+}
+function click (event) {
+	var pos = getPos(event);
+	if(event.ctrlKey) {
+	} else {
+		addVertex(pos.x, pos.y);
+	}
+}
+function gt__ () {
+	//gt_m = 2000;
+	//var t = 20000/gt_m;
+	gt_m = 20000;//
+	//var t = 5000/gt_m;//
+	var t = 0;
+	gt_i = 0;
+	ot = new Date().getTime();
+	gt_p = setInterval(function() {
+			if(gt_i < gt_m) {
+				//addVertex(rand()*msx, rand()*msy);
+				addVertex((randi(149)+1)/150*msx, (randi(99)+1)/100*msy);
+				gt_i ++;
+			} else {
+				clearInterval(gt_p);
+			}
+		}, t);
+}
+function addVertex (x, y) {
+	gv.push({x: x/msx, y: y/msy});
+	gvc.push(randRGB());
+	if(gv.length > 1) {
+		linkNear(gv.length-1);
+	}
+	//redraw();
+	stupd();
+}
+function stupd () {
+	ct = new Date().getTime()
+	sel("st").innerHTML = ((ct - ot)/1000).toFixed(3)+" - "+(gt_i+1)+"/"+gt_m+" - "+gs+" ("+msx+":"+msy+")";
+}
+function drawVertex (p) {
+	var canvas = sel("draw"), 
+		ctx = canvas.getContext("2d");
+	ofs = ctx.fillStyle;
+	ctx.fillStyle = gvc[p];
+	ctx.fillRect(gv[p].x*msx-vr, gv[p].y*msy-vr, 2*vr, 2*vr);
+	ctx.fillStyle = ofs;
+}
+function drawEdge (ap, bp) {
+	var canvas = sel("draw"), 
+		ctx = canvas.getContext("2d");
+	ctx.beginPath();
+	ctx.moveTo(gv[ap].x*msx, gv[ap].y*msy);
+	ctx.lineTo(gv[bp].x*msx, gv[bp].y*msy);
+	ctx.stroke();
+}
+function pif (x, y) {
+	return Math.sqrt(x*x + y*y);
+}
+function linkNear (p) {
+	var mnd = msx + msy, mnp = 0, d;
+	for(var i = 0; i < gv.length; i ++) {
+		if(i != p) {
+			if((d = pif((gv[i].x-gv[p].x)*msx, (gv[i].y-gv[p].y)*msy)) < mnd) {
+				mnp = i;
+				mnd = d;
+			}
+		}
+	}
+	drawEdge(p, mnp);
+	drawVertex(p);
+	drawVertex(mnp);
+	ge.push({a: p, b: mnp});
+	gs += mnd;
+}
+function getPos (event) {
+	var x = 0, y = 0;
+	var canvas = sel("draw");
+
+	if (event.x != undefined && event.y != undefined) {
+		x = event.x; y = event.y;
+	} else {
+		x = event.clientX + document.body.scrollLeft +
+			document.documentElement.scrollLeft;
+		y = event.clientY + document.body.scrollTop +
+			document.documentElement.scrollTop;
+	}
+	x -= canvas.offsetLeft;
+	y -= canvas.offsetTop;
+	return {x: x, y: y};
+}
+function redraw () {
+	clr();
+	draw();
+}
+function draw () {
+	var canvas = sel("draw"), 
+		ctx = canvas.getContext("2d");
+	ctx.beginPath();
+	for(var i = 0; i < ge.length; i ++) {
+		ctx.moveTo(gv[ge[i].a].x*msx, gv[ge[i].a].y*msy);
+		ctx.lineTo(gv[ge[i].b].x*msx, gv[ge[i].b].y*msy);
+	}
+	ctx.stroke();
+	ofs = ctx.fillStyle;
+	for(var i = 0; i < gv.length; i ++) {
+		ctx.fillStyle = gvc[i];
+		ctx.fillRect(gv[i].x*msx-vr, gv[i].y*msy-vr, 2*vr, 2*vr);
+	}
+	ctx.fillStyle = ofs;
+}
+function clr () {
+	var	canvas = sel("draw"), 
+		ctx = canvas.getContext("2d"),
+		ofs = ctx.fillStyle;
+	ctx.fillStyle = "#FFFFFF";
+	ctx.fillRect(0, 0, msx, msy);
+	ctx.fillStyle = ofs;
+}
+function reset () {
+	clearInterval(gt_p);
+	gv.splice(0, gv.length);
+	ge.splice(0, ge.length);
+	clr();
+	onload();
+}
+function randRGB() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(rand() * 16)];
+    }
+    return color;
+}
+function randi (n) {
+	return Math.floor(rand() * n);
+}
+function rand () {
+	return Math.random();
+}
+		</script>
+		<style>
+#draw {
+	outline: solid black 2px;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+		</style>
+	</head>
+	<body id='body' onload='onload()'>
+		<canvas id='draw' width="300" height="225">Error</canvas>
+		<hr>
+		<input type='button' onclick='reset()' value='Reset'>
+		<span id='st'></span>
+	</body>
+</html>

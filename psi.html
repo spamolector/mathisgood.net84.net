@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+	<head>
+		<meta name=viewport content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+		<title>@</title>
+		<script>
+var psx = 100, psy = 100, msx, msy, vr = 3, gv = [], ge = [];
+function sel (s) {
+	return document.getElementById(s);
+}
+function onload () {
+	updateOrientation();
+	var canvas = sel("draw");
+	canvas.onclick = click;
+	around();
+	setInterval(redraw, 250);
+	window.addEventListener("orientationchange", updateOrientation);
+	window.addEventListener("resize", updateOrientation);
+}
+function updateOrientation () {
+	var canvas = sel("draw"), h = document.getElementsByTagName("html")[0], x = h.offsetWidth, y = h.offsetHeight;
+	canvas.width = canvas.height = 
+		msx = msy = Math.min(x, y)*psx/100;
+	canvas.style["margin-top"] = ((y/x)*(100-psx+100*(y>x?1-x/y:0))/2)+"%";
+	//redraw();
+}
+function click (event) {
+	around();
+}
+function around () {
+	reset();
+	gv = gv.concat(putAround(0.5, 0.5, 0.48, rand()*2*Math.PI, randi(30)+3));
+	for(var i = 0; i < gv.length; i ++) {
+		for(var j = i; j < gv.length; j ++) {
+			ge.push({a: i, b: j});
+		}
+	}
+	redraw();
+}
+function putAround (x0, y0, r, f0, n) {
+	var a = 2*Math.PI/n, v = [], f = f0, x, y;
+	for(var i = 0; i < n; i ++) {
+		x = x0 + r*Math.cos(f);
+		y = y0 + r*Math.sin(f);
+		v.push({x: x, y: y});
+		f += a;
+	}
+	return v;
+}
+function redraw () {
+	clr();
+	draw();
+}
+function draw () {
+	var canvas = sel("draw"), 
+		ctx = canvas.getContext("2d");
+	for(var i = 0; i < ge.length; i ++) {
+		ctx.beginPath();
+		ctx.strokeStyle = randRGB();
+		ctx.moveTo(gv[ge[i].a].x*msx, gv[ge[i].a].y*msy);
+		ctx.lineTo(gv[ge[i].b].x*msx, gv[ge[i].b].y*msy);
+		ctx.stroke();
+	}
+	ctx.stroke();
+	ofs = ctx.fillStyle;
+	for(var i = 0; i < gv.length; i ++) {
+		ctx.fillStyle = randRGB();
+		ctx.fillRect(gv[i].x*msx-vr, gv[i].y*msy-vr, 2*vr, 2*vr);
+	}
+	ctx.fillStyle = ofs;
+}
+function clr () {
+	var	canvas = sel("draw"), 
+		ctx = canvas.getContext("2d"),
+		ofs = ctx.fillStyle;
+	ctx.fillStyle = "#FFFFFF";
+	ctx.fillRect(0, 0, msx, msy);
+	ctx.fillStyle = ofs;
+}
+function reset () {
+	gv.splice(0, gv.length);
+	ge.splice(0, ge.length);
+	clr();
+}
+function randRGB() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[randi(16)];
+    }
+    return color;
+}
+function randi (n) {
+	return Math.floor(rand() * n);
+}
+function rand () {
+	return Math.random();
+}
+		</script>
+		<style>
+body, html, #wrap {
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+#draw {
+    -webkit-animation: mymove 16s infinite linear; /* Chrome, Safari, Opera */ 
+    animation: mymove 16s infinite linear;
+	color: #FFFFFF;
+}
+
+/* Chrome, Safari, Opera */ 
+@-webkit-keyframes mymove {
+    from {
+		-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+		}
+	to {
+		-ms-transform: rotate(360deg);
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+		}
+}
+
+/* Standard syntax */
+@keyframes mymove {
+    from {
+		-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+		}
+	to {
+		-ms-transform: rotate(360deg);
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+		}
+}
+#draw {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+    border-radius: 100%;
+	/*outline: 3px solid black;*/
+}
+		</style>
+	</head>
+	<body id='body' onload='onload()' onunload='onunload()'>
+		<div id='wrap'>
+			<canvas id='draw' width="0" height="0">Error</canvas>
+		</div>
+	</body>
+</html>

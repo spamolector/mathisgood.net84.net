@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"> 
+		<title>Code</title>
+		<script>
+function r (_l, _r, _d) {
+	return {l: _l, r: _r, d: _d};
+}
+function def () {
+//	var defAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789~!@#$%^&*()_+{}|:\"<>?`-=[]\\;\',./";
+	var defAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789_";
+	var defText = "hello_world";
+	var defRange = JSON.stringify(
+		[r(0, Math.floor(defAlphabet.length/2), 1), r(Math.floor(defAlphabet.length/2)+1, defAlphabet.length-1, -1)]);
+	sel("decoded").value = defText;
+	sel("alphabet").value = defAlphabet;
+	sel("range").value = defRange;
+	sel("bkey").value = defAlphabet[Math.floor(Math.random()*defAlphabet.length)];
+	encode();
+}
+function load () {
+	def();
+}
+function sel (str) {
+	return document.getElementById(str);
+}
+function str_of_alp (str, alp) {
+	for(var i = 0; i < str.length; i ++) {
+		if(alp.indexOf(str.charAt(i)) == -1) {
+			alert("\'"+str.charAt(i)+"\' doesn\'t belong to alphabet \""+alp+"\" ("+alp.length+")");
+			return false;
+		}
+	}
+	return true;
+}
+function check_range (str) {
+	try {
+		var j = JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
+}
+function check_key (str) {
+	if(str.length > 0) {
+		return true;
+	}
+	alert("Key is empty");
+	return false;
+}
+function parse_range (str) {
+	var t = [], s = JSON.parse(str);
+	for(var i = 0; i < s.length; i ++) {
+		for(var j = s[i].l; j <= s[i].r; j ++) {
+			t.push(s[i].d);
+		}
+	}
+	return t;
+}
+function str_to_alp_code (str, alp) {
+	var t = [];
+	for(var i = 0; i < str.length; i ++) {
+		t.push(alp.indexOf(str.charAt(i)));
+	}
+	return t;
+}
+function alp_code (str, i, alp) {
+	return alp.indexOf(str.charAt(i))
+}
+function null_alp_code (len) {
+	var t = [];
+	for(var i = 0; i < len; i ++) {
+		t.push(0);
+	}
+	return t;
+}
+function alp_code_to_str (code, alp) {
+	var s = "";
+	for(var i = 0; i < code.length; i ++) {
+		s += alp.charAt(code[i]);
+	}
+	return s;
+}
+function encode () {
+	var n = ["ceasar", "myswap", "atbash", "mybicycle"], f = [encode_ceasar, encode_myswap, encode_atbash, encode_mybicycle], t, v = sel("method").value;
+	var str = sel("decoded").value, alp = sel("alphabet").value, key = sel("bkey").value, rngstr = sel("range").value;
+	if((t = n.indexOf(v)) != -1) {
+		sel("encoded").value = f[t](str, alp, key, rngstr);
+		sel("code").value = f[t];
+	} else {
+		alert("Unknown method");
+	}
+}
+function decode () {
+	var n = ["ceasar", "myswap", "atbash", "mybicycle"], f = [decode_ceasar, decode_myswap, decode_atbash, decode_mybicycle], t, v = sel("method").value;
+	var str = sel("encoded").value, alp = sel("alphabet").value, key = sel("bkey").value, rngstr = sel("range").value;
+	if((t = n.indexOf(v)) != -1) {
+		sel("decoded").value = f[t](str, alp, key, rngstr);
+		sel("code").value = f[t];
+	} else {
+		alert("Unknown method");
+	}
+}
+function encode_ceasar (decstr, alp, key, rngstr) {
+	var encstr;
+	if(str_of_alp(decstr, alp) && check_key(key)) {
+		var range = parse_range(rngstr), dec = str_to_alp_code(decstr, alp), len = dec.length, enc = null_alp_code(len);
+		key = alp_code(key, 0, alp);
+		for(var i = 0; i < len; i ++) {
+			enc[i] = (dec[i] + key)%alp.length;
+		}
+		encstr = alp_code_to_str(enc, alp);
+		return encstr;
+	}
+	return "";
+}
+function decode_ceasar (encstr, alp, key, rngstr) {
+	if(check_key(key)) {
+		key = alp.charAt((alp.length - alp_code(key, 0, alp))%alp.length);
+		return encode_ceasar(encstr, alp, key, rngstr);
+	}
+	return "";
+}
+function encode_myswap (decstr, alp, key, rngstr) {
+	var encstr, dec = str_to_alp_code(decstr, alp), len = dec.length, enc = null_alp_code(len);
+	enc[len-1] = dec[len-1];
+	for(var i = 1; i < len; i += 2) {
+		enc[i-1] = dec[i];
+		enc[i] = dec[i-1];
+	}
+	encstr = alp_code_to_str(enc, alp);
+	return encstr;
+}
+function decode_myswap (encstr, alp, key, rngstr) {
+	return encode_myswap(encstr, alp, key, rngstr);
+}
+function encode_atbash (decstr, alp, key, rngstr) {
+	var encstr, dec = str_to_alp_code(decstr, alp), len = dec.length, enc = null_alp_code(len);
+	for(var i = 0; i < len; i ++) {
+		enc[i] = (alp.length-dec[i]-1)%alp.length;
+	}
+	encstr = alp_code_to_str(enc, alp);
+	return encstr;
+}
+function decode_atbash (encstr, alp, key, rngstr) {
+	return encode_atbash(encstr, alp, key, rngstr);
+}
+function encode_mybicycle (decstr, alp, key, rngstr) {
+	var encstr;
+	if(str_of_alp(decstr, alp) && check_range(rngstr) && check_key(key)) {
+		var range = parse_range(rngstr), dec = str_to_alp_code(decstr, alp), len = dec.length, enc = null_alp_code(len), k;
+		k = alp_code(key, 0, alp);
+		for(var i = 0; i < len; i ++) {
+			enc[i] = (dec[i] + k)%alp.length;
+			k = (alp.length + k + range[dec[i]])%alp.length;
+		}
+		encstr = alp_code_to_str(enc, alp);
+		return encstr;
+	}
+	return "";
+}
+function decode_mybicycle (encstr, alp, key, rngstr) {
+	var encstr;
+	if(str_of_alp(encstr, alp) && check_range(rngstr) && check_key(key)) {
+		var range = parse_range(rngstr), enc = str_to_alp_code(encstr, alp), len = enc.length, dec = null_alp_code(len), k;
+		k = alp_code(key, 0, alp);
+		for(var i = 0; i < len; i ++) {
+			dec[i] = (alp.length + enc[i] - k)%alp.length;
+			k = (alp.length + k + range[dec[i]])%alp.length;
+		}
+		decstr = alp_code_to_str(dec, alp);
+		return decstr;
+	}
+	return "";
+}
+		</script>
+	</head>
+	<body onload='load();'>
+		Decoded:<input type='button' value='Encode' onclick='encode();'><br>
+		<textarea id='decoded'></textarea><br>
+		Encoded:<input type='button' value='Decode' onclick='decode();'><br>
+		<textarea id='encoded'></textarea><br>
+		Alphabet:<br>
+		<textarea id='alphabet'></textarea><br>
+		Range:<br>
+		<textarea id='range'></textarea><br>
+		Key:<br>
+		<input type='text' id='bkey'><br>
+		Method:<br>
+		<select id='method'>
+			<option value='ceasar' selected>Ceasar</option>
+			<option value='atbash'>Atbash</option>
+			<option value='myswap'>my swap</option>
+			<option value='mybicycle'>my bicycle</option>
+		</select><br>
+		Code:<br>
+		<textarea id='code'></textarea><br>
+	</body>
+</html>
